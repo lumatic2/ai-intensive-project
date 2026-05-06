@@ -19,3 +19,9 @@ data/
 *.mp3
 *.wav
 .gstack/
+
+# 내부용 (공개 X)
+CLAUDE.md
+CLAUDE.local.md
+ROADMAP.md
+archive/
