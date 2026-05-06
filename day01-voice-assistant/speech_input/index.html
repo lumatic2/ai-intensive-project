@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: transparent;
+  overflow: hidden;
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 0;
+}
+
+#btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s, box-shadow 0.15s;
+  flex-shrink: 0;
+  background: #6366F1;
+  color: white;
+}
+#btn:hover { transform: scale(1.07); }
+#btn.recording {
+  background: #e8472a;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232,71,42,0.5); }
+  50%       { box-shadow: 0 0 0 10px rgba(232,71,42,0); }
+}
+
+#preview-box {
+  flex: 1;
+  min-height: 44px;
+  max-height: 120px;
+  overflow-y: auto;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  transition: background 0.2s;
+  word-break: keep-all;
+}
+
+/* 다크/라이트는 JS에서 동적으로 */
+.hint   { opacity: 0.42; font-style: italic; }
+.interim { opacity: 0.68; }
+.final  { font-weight: 500; color: #6366F1; }
+</style>
+</head>
+<body>
+<div class="container">
+  <button id="btn" title="클릭하여 말하기">🎙️</button>
+  <div id="preview-box">
+    <span id="preview" class="hint">클릭하여 말하기</span>
+  </div>
+</div>
+
+<script>
+let recognition = null;
+let isRecording  = false;
+let darkMode     = true;
+let lastFinal    = '';
+
+/* ── 테마 ── */
+function applyTheme() {
+  const textColor = darkMode ? '#E3E3E3' : '#1F2937';
+  const boxBg     = darkMode ? '#2D2D30'  : '#F3F4F6';
+  document.body.style.color = textColor;
+  document.getElementById('preview-box').style.background = boxBg;
+  document.getElementById('preview-box').style.color      = textColor;
+}
+
+/* ── Streamlit 통신 ── */
+window.addEventListener('message', (e) => {
+  const d = e.data;
+  if (!d || !d.type) return;
+  if (d.type === 'streamlit:render') {
+    darkMode = (d.args && d.args.dark_mode !== false);
+    applyTheme();
+    sendHeight();
+  }
+});
+
+function toStreamlit(type, data) {
+  window.parent.postMessage(
+    Object.assign({isStreamlitMessage: true, type: 'streamlit:' + type}, data),
+    '*'
+  );
+}
+function sendValue(v) {
+  toStreamlit('setComponentValue', {value: v, dataType: 'json'});
+}
+function sendHeight() {
+  requestAnimationFrame(() => {
+    const h = document.querySelector('.container').getBoundingClientRect().height;
+    toStreamlit('setFrameHeight', {height: h > 0 ? Math.ceil(h) + 20 : 80});
+  });
+}
+
+/* ── UI 요소 ── */
+const btn        = document.getElementById('btn');
+const preview    = document.getElementById('preview');
+const previewBox = document.getElementById('preview-box');
+
+btn.addEventListener('click', () => isRecording ? stopRec() : startRec());
+
+/* ── 녹음 시작 ── */
+function startRec() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    preview.textContent = '❌ Chrome 브라우저를 사용해주세요';
+    preview.className   = '';
+    return;
+  }
+
+  recognition = new SR();
+  recognition.continuous      = false;
+  recognition.interimResults  = true;
+  recognition.lang            = 'ko-KR';
+  recognition.maxAlternatives = 1;
+
+  recognition.onstart = () => {
+    isRecording     = true;
+    lastFinal       = '';
+    btn.className   = 'recording';
+    btn.textContent = '⏹';
+    preview.className   = 'hint';
+    preview.textContent = '듣고 있어요…';
+  };
+
+  recognition.onresult = (ev) => {
+    let interim = '', final = '';
+    for (let i = 0; i < ev.results.length; i++) {
+      const t = ev.results[i][0].transcript;
+      ev.results[i].isFinal ? (final += t) : (interim += t);
+    }
+    if (interim) {
+      preview.className   = 'interim';
+      preview.textContent = interim;
+    }
+    if (final) {
+      lastFinal           = final;
+      preview.className   = 'final';
+      preview.textContent = final;
+    }
+    sendHeight();
+  };
+
+  recognition.onend = () => {
+    resetBtn();
+    if (lastFinal) {
+      sendValue(lastFinal);
+      /* 1.2초 뒤 힌트로 되돌림 */
+      setTimeout(() => {
+        preview.className   = 'hint';
+        preview.textContent = '클릭하여 말하기';
+        lastFinal = '';
+      }, 1200);
+    } else {
+      preview.className   = 'hint';
+      preview.textContent = '클릭하여 말하기';
+    }
+  };
+
+  recognition.onerror = (e) => {
+    preview.className   = 'hint';
+    preview.textContent = e.error === 'no-speech' ? '클릭하여 말하기' : `오류: ${e.error}`;
+    resetBtn();
+  };
+
+  recognition.start();
+}
+
+function stopRec() { if (recognition) recognition.stop(); }
+
+function resetBtn() {
+  isRecording     = false;
+  btn.className   = '';
+  btn.textContent = '🎙️';
+}
+
+/* ── 초기화 ── */
+applyTheme();
+toStreamlit('componentReady', {apiVersion: 1});
+sendHeight();
+setTimeout(sendHeight, 150);
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+# Claude Code
+.claude/worktrees/
+.claude/.last-opened
+
+# 환경변수
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv*/
+venv/
+
+# 임시/출력
+tmp/
+outputs/
+data/
+*.mp3
+*.wav
+.gstack/
