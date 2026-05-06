@@ -2,8 +2,10 @@
 .claude/worktrees/
 .claude/.last-opened
 
-# 환경변수
+# 환경변수 / 시크릿
 .env
+.streamlit/secrets.toml
+secrets.toml
 
 # Python
 __pycache__/

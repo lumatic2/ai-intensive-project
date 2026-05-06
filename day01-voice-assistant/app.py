@@ -1,5 +1,6 @@
 import os
 import re
+import json
 import base64
 import tempfile
 import asyncio
@@ -10,9 +11,17 @@ import edge_tts
 import streamlit as st
 import streamlit.components.v1 as components
 from speech_input import speech_input
+from tools import TOOLS, execute_tool
 
 load_dotenv()
-client = OpenAI()
+# 로컬: .env, Streamlit Cloud: st.secrets 둘 다 지원
+_api_key = os.environ.get("OPENAI_API_KEY")
+if not _api_key:
+    try:
+        _api_key = st.secrets["OPENAI_API_KEY"]
+    except (KeyError, FileNotFoundError):
+        pass
+client = OpenAI(api_key=_api_key)
 
 VOICES = {
     "여성 (Sun Hi)": "ko-KR-SunHiNeural",
@@ -173,12 +182,10 @@ def inject_theme(dark: bool) -> None:
 
 # ── 핵심 함수 ─────────────────────────────────────────────────────────
 
-def stream_chat(user_text: str, history: list[dict], system_prompt: str, placeholder):
-    history.append({"role": "user", "content": user_text})
+def _stream_response(messages: list[dict], placeholder):
+    """주어진 messages로 스트리밍 응답을 받아 placeholder에 출력."""
     stream = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "system", "content": system_prompt}] + history,
-        stream=True,
+        model="gpt-4o-mini", messages=messages, stream=True,
     )
     full_reply, sentences, buffer = "", [], ""
     for chunk in stream:
@@ -193,8 +200,56 @@ def stream_chat(user_text: str, history: list[dict], system_prompt: str, placeho
     if buffer.strip():
         sentences.append(buffer.strip())
     placeholder.markdown(full_reply)
-    history.append({"role": "assistant", "content": full_reply})
     return full_reply, sentences if sentences else [full_reply]
+
+
+def stream_chat(user_text: str, history: list[dict], system_prompt: str, placeholder):
+    """도구 사용 가능한 대화. 도구 호출 시 실행 후 다시 스트리밍."""
+    history.append({"role": "user", "content": user_text})
+    msgs = [{"role": "system", "content": system_prompt}] + history
+
+    # 1차 호출: 도구를 쓸지 결정 (non-streaming)
+    response = client.chat.completions.create(
+        model="gpt-4o-mini", messages=msgs, tools=TOOLS,
+    )
+    msg = response.choices[0].message
+
+    # 도구 호출이 있으면 실행하고 결과를 history에 추가
+    if msg.tool_calls:
+        # 어시스턴트의 도구 호출 메시지 저장
+        history.append({
+            "role": "assistant",
+            "content": msg.content,
+            "tool_calls": [
+                {
+                    "id": tc.id, "type": "function",
+                    "function": {"name": tc.function.name, "arguments": tc.function.arguments},
+                }
+                for tc in msg.tool_calls
+            ],
+        })
+        # 각 도구 실행
+        used_tools = []
+        for tc in msg.tool_calls:
+            args = json.loads(tc.function.arguments)
+            placeholder.markdown(f"🔧 `{tc.function.name}` 호출 중...")
+            result = execute_tool(tc.function.name, args)
+            used_tools.append(tc.function.name)
+            history.append({
+                "role": "tool", "tool_call_id": tc.id,
+                "name": tc.function.name, "content": result,
+            })
+        # 2차 호출: 도구 결과 기반으로 최종 응답 스트리밍
+        msgs2 = [{"role": "system", "content": system_prompt}] + history
+        full_reply, sentences = _stream_response(msgs2, placeholder)
+        history.append({"role": "assistant", "content": full_reply})
+        return full_reply, sentences
+
+    # 도구 없이 그냥 텍스트 응답
+    placeholder.markdown(msg.content)
+    history.append({"role": "assistant", "content": msg.content})
+    parts = [p.strip() for p in _SENTENCE_SPLIT.split(msg.content) if p.strip()]
+    return msg.content, parts if parts else [msg.content]
 
 
 async def _tts_one(text: str, voice: str) -> bytes:
@@ -278,9 +333,11 @@ with st.sidebar:
         value=(
             f"당신의 이름은 '{assistant_name}'입니다. "
             "친절하고 유능한 AI 음성 비서입니다. "
-            "답변은 간결하게 2~3문장으로 해주세요."
+            "답변은 간결하게 2~3문장으로 해주세요. "
+            "음성으로 출력되니 마크다운·기호·이모지는 쓰지 마세요. "
+            "필요하면 도구(시간 조회·계산·웹 검색·메모 저장/조회)를 적극 활용하세요."
         ),
-        height=150,
+        height=180,
     )
     st.divider()
     st.subheader("⌨️ 텍스트 입력")

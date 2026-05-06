@@ -22,8 +22,9 @@
 ![preview](day01-voice-assistant/docs/screenshot-dark.png)
 
 - **STT**: Web Speech API (실시간 인식 표시)
-- **LLM**: GPT-4o-mini (스트리밍)
+- **LLM**: GPT-4o-mini (스트리밍 + Function Calling)
 - **TTS**: edge-tts (한국어, 무료)
 - **UI**: Streamlit + 다크/라이트 모드 토글
+- **도구**: 시간 조회, 계산, 웹 검색(DuckDuckGo), 메모 저장/조회
 
 → 자세한 설명: [day01-voice-assistant/README.md](day01-voice-assistant/README.md)
