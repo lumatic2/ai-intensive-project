@@ -5,6 +5,12 @@
 > 🌐 **라이브 데모**: **https://ai-intensive-project-eazzk9ccchozhavzngvvwy.streamlit.app/**
 > *(Chrome 브라우저에서 마이크 권한 허용 필요)*
 
+### 데모
+
+![demo](docs/demo.gif)
+
+### 스크린샷
+
 | Dark Mode | Light Mode | Function Calling |
 |-----------|------------|------------------|
 | ![dark](docs/screenshot-dark.png) | ![light](docs/screenshot-light.png) | ![tools](docs/screenshot-tools.png) |

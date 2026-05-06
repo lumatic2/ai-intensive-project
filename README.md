@@ -21,7 +21,7 @@
 
 🌐 **라이브 데모**: https://ai-intensive-project-eazzk9ccchozhavzngvvwy.streamlit.app/
 
-![preview](day01-voice-assistant/docs/screenshot-dark.png)
+![demo](day01-voice-assistant/docs/demo.gif)
 
 - **STT**: Web Speech API (실시간 인식 표시)
 - **LLM**: GPT-4o-mini (스트리밍 + Function Calling)
@@ -30,3 +30,9 @@
 - **도구**: 시간 조회, 계산, 웹 검색(DuckDuckGo), 메모 저장/조회
 
 → 자세한 설명: [day01-voice-assistant/README.md](day01-voice-assistant/README.md)
+
+---
+
+## 작성자
+
+**전유성** · 성균관대학교 글로벌경영학과 · 2019312779

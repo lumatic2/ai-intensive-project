@@ -345,6 +345,18 @@ with st.sidebar:
     text_input = st.text_area("메시지", height=100, key="text_msg")
     send_btn = st.button("전송", use_container_width=True)
 
+    # 작성자 정보 (사이드바 최하단)
+    st.divider()
+    st.markdown(
+        f'<div style="font-size:0.72rem;color:{"#6E6E73" if st.session_state.dark_mode else "#9CA3AF"};'
+        f'line-height:1.5;margin-top:8px">'
+        f'<b>전유성</b><br/>'
+        f'성균관대학교 글로벌경영학과<br/>'
+        f'2019312779'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
+
 
 # ── 메인 UI ───────────────────────────────────────────────────────────
 
