@@ -19,6 +19,8 @@
 
 선글라스 낀 토끼가 한국어로 대화하는 음성 비서 웹 앱.
 
+🌐 **라이브 데모**: https://ai-intensive-project-eazzk9ccchozhavzngvvwy.streamlit.app/
+
 ![preview](day01-voice-assistant/docs/screenshot-dark.png)
 
 - **STT**: Web Speech API (실시간 인식 표시)

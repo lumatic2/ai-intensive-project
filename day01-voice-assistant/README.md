@@ -2,7 +2,8 @@
 
 선글라스 낀 토끼 캐릭터 **제이미**, 한국어로 대화하고 도구를 직접 호출하는 음성 비서.
 
-> 🌐 **라이브 데모**: (배포 후 링크 추가)
+> 🌐 **라이브 데모**: **https://ai-intensive-project-eazzk9ccchozhavzngvvwy.streamlit.app/**
+> *(Chrome 브라우저에서 마이크 권한 허용 필요)*
 
 | Dark Mode | Light Mode | Function Calling |
 |-----------|------------|------------------|
