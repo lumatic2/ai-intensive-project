@@ -14,14 +14,17 @@ from speech_input import speech_input
 from tools import TOOLS, execute_tool
 
 load_dotenv()
-# 로컬: .env, Streamlit Cloud: st.secrets 둘 다 지원
-_api_key = os.environ.get("OPENAI_API_KEY")
+# Timely GPT (OpenAI 호환 모드) — 로컬: .env, Streamlit Cloud: st.secrets 둘 다 지원
+_api_key = os.environ.get("TIMELY_API_KEY")
+_base_url = os.environ.get("TIMELY_BASE_URL", "https://hello.timelygpt.co.kr/api/v2/chat/bridge/openai")
 if not _api_key:
     try:
-        _api_key = st.secrets["OPENAI_API_KEY"]
+        _api_key = st.secrets["TIMELY_API_KEY"]
+        _base_url = st.secrets.get("TIMELY_BASE_URL", _base_url)
     except (KeyError, FileNotFoundError):
         pass
-client = OpenAI(api_key=_api_key)
+client = OpenAI(api_key=_api_key, base_url=_base_url)
+MODEL = "openai/gpt-4o-mini"
 
 VOICES = {
     "여성 (Sun Hi)": "ko-KR-SunHiNeural",
@@ -185,7 +188,7 @@ def inject_theme(dark: bool) -> None:
 def _stream_response(messages: list[dict], placeholder):
     """주어진 messages로 스트리밍 응답을 받아 placeholder에 출력."""
     stream = client.chat.completions.create(
-        model="gpt-4o-mini", messages=messages, stream=True,
+        model=MODEL, messages=messages, stream=True,
     )
     full_reply, sentences, buffer = "", [], ""
     for chunk in stream:
@@ -210,7 +213,7 @@ def stream_chat(user_text: str, history: list[dict], system_prompt: str, placeho
 
     # 1차 호출: 도구를 쓸지 결정 (non-streaming)
     response = client.chat.completions.create(
-        model="gpt-4o-mini", messages=msgs, tools=TOOLS,
+        model=MODEL, messages=msgs, tools=TOOLS,
     )
     msg = response.choices[0].message
 
@@ -371,7 +374,7 @@ st.markdown(
       <div>
         <h1 style="margin:0;font-size:2.4rem;color:{c['text']}">{assistant_name}</h1>
         <p style="margin:0;color:{c['text_muted']};font-size:0.85rem">
-          Whisper · GPT-4o-mini · edge-tts ({voice_label})
+          TimelyGPT (gpt-4o-mini) · edge-tts ({voice_label})
         </p>
       </div>
     </div>
