@@ -13,7 +13,9 @@ def list_scenarios() -> list[dict]:
             "name_ko": s.name_ko,
             "description": s.description,
             "current_time": s.current_time,
+            "sleep_time": s.sleep_time,
             "user_location": s.user_location,
+            "active_events": s.active_events,
         }
         for s in load_scenarios().values()
     ]
