@@ -1,54 +1,50 @@
 "use client";
-import { ROOMS_SEED, type Mode, type RoomId, type RoomScore } from "@/lib/types";
+import { ROOMS_SEED, ROOM_LABEL, type Mode, type RoomId, type RoomScore } from "@/lib/types";
 import { scoreToFill } from "@/lib/colors";
 
 type Props = { rooms?: RoomScore[]; userLocation?: RoomId | null };
 
 type Furniture = { d: string; transform?: string };
 
+// 새 bbox 기준 가구 배치
 const FURNITURE: Partial<Record<RoomId, Furniture[]>> = {
   living: [
-    { d: "M 0 0 h 80 v 16 h -80 z", transform: "translate(160 130)" },
-    { d: "M 0 0 h 80 v 4 h -80 z", transform: "translate(160 124)" },
-    { d: "M 0 0 h 14 v 14 h -14 z", transform: "translate(252 122)" },
+    { d: "M 0 0 h 80 v 16 h -80 z", transform: "translate(140 130)" },
+    { d: "M 0 0 h 80 v 4 h -80 z", transform: "translate(140 124)" },
+    { d: "M 0 0 h 14 v 14 h -14 z", transform: "translate(232 122)" },
   ],
   bedroom: [
-    { d: "M 0 0 h 70 v 50 h -70 z", transform: "translate(140 210)" },
-    { d: "M 0 0 h 28 v 10 h -28 z", transform: "translate(144 214)" },
-    { d: "M 0 0 h 28 v 10 h -28 z", transform: "translate(178 214)" },
+    { d: "M 0 0 h 70 v 50 h -70 z", transform: "translate(20 215)" },
+    { d: "M 0 0 h 28 v 10 h -28 z", transform: "translate(24 219)" },
+    { d: "M 0 0 h 28 v 10 h -28 z", transform: "translate(58 219)" },
   ],
   kitchen: [
-    { d: "M 0 0 h 80 v 18 h -80 z", transform: "translate(320 22)" },
-    { d: "M 0 0 v -8 h 12", transform: "translate(354 22)" },
+    { d: "M 0 0 h 100 v 18 h -100 z", transform: "translate(300 22)" },
+    { d: "M 0 0 v -8 h 12", transform: "translate(340 22)" },
   ],
   bathroom: [
     {
-      d: "M 6 0 h 68 a 6 6 0 0 1 6 6 v 28 a 6 6 0 0 1 -6 6 h -68 a 6 6 0 0 1 -6 -6 v -28 a 6 6 0 0 1 6 -6 z",
-      transform: "translate(320 110)",
+      d: "M 6 0 h 88 a 6 6 0 0 1 6 6 v 48 a 6 6 0 0 1 -6 6 h -88 a 6 6 0 0 1 -6 -6 v -48 a 6 6 0 0 1 6 -6 z",
+      transform: "translate(300 180)",
     },
   ],
   entrance: [
-    {
-      d: "M 0 0 a 8 4 0 1 0 16 0 a 8 4 0 1 0 -16 0",
-      transform: "translate(20 50)",
-    },
-    {
-      d: "M 0 0 a 8 4 0 1 0 16 0 a 8 4 0 1 0 -16 0",
-      transform: "translate(40 50)",
-    },
+    { d: "M 0 0 a 6 4 0 1 0 12 0 a 6 4 0 1 0 -12 0", transform: "translate(20 140)" },
+    { d: "M 0 0 a 6 4 0 1 0 12 0 a 6 4 0 1 0 -12 0", transform: "translate(44 140)" },
   ],
 };
 
-// 흰색 사각형으로 벽 끊기 (문 표시)
+// 문 (흰색 사각형으로 벽 끊기) — 새 bbox 경계에 맞춤
 const DOORS = [
-  { x: 92, y: 78, w: 16, h: 4 },
-  { x: 298, y: 60, w: 4, h: 16 },
-  { x: 184, y: 158, w: 16, h: 4 },
-  { x: 358, y: 80, w: 4, h: 16 },
+  { x: 78, y: 110, w: 4, h: 18 }, // entrance ↔ living
+  { x: 278, y: 30, w: 4, h: 18 }, // living ↔ kitchen
+  { x: 170, y: 178, w: 18, h: 4 }, // living ↔ bedroom
+  { x: 340, y: 98, w: 18, h: 4 }, // kitchen ↔ bathroom
+  { x: 30, y: 178, w: 18, h: 4 }, // entrance ↔ bedroom
 ];
 
 function scoreTextColor(score: number, mode: Mode): string {
-  if (mode === "excluded") return "#8A8A8A";
+  if (mode === "excluded") return "#6B6B6B";
   if (score >= 50) return "#1A1A1A";
   return "#4B4B4B";
 }
@@ -76,11 +72,37 @@ function PersonIcon({ x, y }: { x: number; y: number }) {
   );
 }
 
+function buildAriaLabel(rooms?: RoomScore[], userLocation?: RoomId | null): string {
+  if (!rooms || rooms.length === 0) {
+    const parts = ROOMS_SEED.map((r) => `${r.name_ko} ${r.base_score}점`);
+    return `집 평면도. ${parts.join(", ")}.`;
+  }
+  const parts = rooms.map((r) => {
+    const mode =
+      r.mode === "excluded"
+        ? " 제외"
+        : r.mode === "quiet"
+          ? " 저소음"
+          : r.mode === "delayed"
+            ? " 지연"
+            : "";
+    return `${ROOM_LABEL[r.room_id]} ${r.final}점${mode}`;
+  });
+  const userPart = userLocation
+    ? ` 사용자 위치 ${ROOM_LABEL[userLocation]}.`
+    : "";
+  return `집 평면도. ${parts.join(", ")}.${userPart}`;
+}
+
 export function HouseMap({ rooms, userLocation }: Props) {
   const scoreMap = new Map(rooms?.map((r) => [r.room_id, r]) ?? []);
+  const ariaLabel = buildAriaLabel(rooms, userLocation);
+
   return (
     <svg
       viewBox="0 0 420 280"
+      role="img"
+      aria-label={ariaLabel}
       className="w-full h-auto border border-line rounded-xl bg-white shadow-sm"
     >
       <defs>
@@ -94,7 +116,7 @@ export function HouseMap({ rooms, userLocation }: Props) {
         </pattern>
       </defs>
 
-      {/* Layer 1: 방 채우기 + 외벽 */}
+      {/* Layer 1: 방 채우기 + 내벽 */}
       {ROOMS_SEED.map((room) => {
         const s = scoreMap.get(room.id);
         const score = s?.final ?? room.base_score;
@@ -120,7 +142,7 @@ export function HouseMap({ rooms, userLocation }: Props) {
             key={`fur-${room.id}-${i}`}
             d={f.d}
             transform={f.transform}
-            stroke="#8A8A8A"
+            stroke="#6B6B6B"
             strokeWidth={1}
             fill="none"
             strokeLinejoin="round"
@@ -129,7 +151,7 @@ export function HouseMap({ rooms, userLocation }: Props) {
         )),
       )}
 
-      {/* Layer 3: 외벽 강조 (방 5개 둘러싸는 외곽선) */}
+      {/* Layer 3: 외벽 강조 */}
       <rect
         x={0}
         y={0}
@@ -189,13 +211,14 @@ export function HouseMap({ rooms, userLocation }: Props) {
       })}
 
       {/* Layer 6: 사용자 아이콘 */}
-      {userLocation && (() => {
-        const room = ROOMS_SEED.find((r) => r.id === userLocation);
-        if (!room) return null;
-        const x = room.bbox.x + room.bbox.w - 22;
-        const y = room.bbox.y + 22;
-        return <PersonIcon x={x} y={y} />;
-      })()}
+      {userLocation &&
+        (() => {
+          const room = ROOMS_SEED.find((r) => r.id === userLocation);
+          if (!room) return null;
+          const x = room.bbox.x + room.bbox.w - 22;
+          const y = room.bbox.y + 22;
+          return <PersonIcon x={x} y={y} />;
+        })()}
     </svg>
   );
 }

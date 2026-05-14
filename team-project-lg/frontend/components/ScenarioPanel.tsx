@@ -62,11 +62,11 @@ export function ScenarioPanel({
               {chips.map((eid) => (
                 <span
                   key={eid}
-                  className={`px-2 py-0.5 rounded-md text-[11px] font-medium
+                  className={`px-2 py-0.5 rounded-md text-[11px] font-medium border
                     ${
                       active
-                        ? "bg-white/20 text-white"
-                        : "bg-line/60 text-ink"
+                        ? "bg-white/20 text-white border-white/30"
+                        : "bg-paper text-ink border-line-2"
                     }`}
                 >
                   {eventLabel.get(eid) ?? eid}

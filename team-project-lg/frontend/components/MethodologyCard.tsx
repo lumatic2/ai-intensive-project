@@ -49,7 +49,12 @@ export function MethodologyCard() {
 
       {open && (
         <div className="mt-6 space-y-5">
-          <svg viewBox="0 0 880 130" className="w-full h-auto">
+          <svg
+            viewBox="0 0 880 130"
+            className="w-full h-auto"
+            role="img"
+            aria-label="5단계 처리 흐름: 공간 이해, 사용자 행동, 상황 추론, 의사결정, 이유 설명"
+          >
             <defs>
               <marker
                 id="arrow"
@@ -78,7 +83,7 @@ export function MethodologyCard() {
                   <text
                     x={12}
                     y={22}
-                    fill="#C9A063"
+                    fill="#8B6628"
                     style={{
                       font: '600 11px var(--font-mono)',
                     }}

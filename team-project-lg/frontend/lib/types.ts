@@ -78,13 +78,13 @@ export type RoomBbox = {
   bbox: { x: number; y: number; w: number; h: number };
 };
 
-// 백엔드 미연결 fallback. backend/app/data/rooms.json과 동기 유지 필요.
+// 백엔드 미연결 fallback. 외벽 420×280을 5개 방이 빈틈 없이 채움.
 export const ROOMS_SEED: RoomBbox[] = [
-  { id: "entrance", name_ko: "현관", base_score: 30, bbox: { x: 0, y: 0, w: 100, h: 80 } },
-  { id: "living", name_ko: "거실", base_score: 25, bbox: { x: 100, y: 0, w: 200, h: 160 } },
-  { id: "kitchen", name_ko: "주방", base_score: 20, bbox: { x: 300, y: 0, w: 120, h: 80 } },
-  { id: "bedroom", name_ko: "침실", base_score: 15, bbox: { x: 100, y: 160, w: 200, h: 120 } },
-  { id: "bathroom", name_ko: "욕실", base_score: 10, bbox: { x: 300, y: 80, w: 120, h: 80 } },
+  { id: "entrance", name_ko: "현관", base_score: 30, bbox: { x: 0, y: 0, w: 80, h: 180 } },
+  { id: "living", name_ko: "거실", base_score: 25, bbox: { x: 80, y: 0, w: 200, h: 180 } },
+  { id: "kitchen", name_ko: "주방", base_score: 20, bbox: { x: 280, y: 0, w: 140, h: 100 } },
+  { id: "bedroom", name_ko: "침실", base_score: 15, bbox: { x: 0, y: 180, w: 280, h: 100 } },
+  { id: "bathroom", name_ko: "욕실", base_score: 10, bbox: { x: 280, y: 100, w: 140, h: 180 } },
 ];
 
 export const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
