@@ -7,11 +7,12 @@
 
 ---
 
-## 일별 결과물
+## 결과물
 
-| Day | 날짜 | 주제 | 결과물 |
-|-----|------|------|--------|
-| 01  | 2026-05-06 | AI 음성 비서 | [day01-voice-assistant/](day01-voice-assistant/) — 제이미 |
+| 항목 | 날짜 | 주제 | 디렉토리 | 라이브 |
+|---|---|---|---|---|
+| Day 01 | 2026-05-06 | AI 음성 비서 제이미 | [day01-voice-assistant/](day01-voice-assistant/) | [streamlit.app](https://ai-intensive-project-eazzk9ccchozhavzngvvwy.streamlit.app/) |
+| 팀 프로젝트 | 2026-05-13 ~ 30 | 생활 맥락 로봇청소기 시뮬레이터 (LG 가전 멘토링) | [team-project-lg/](team-project-lg/) | [cleaning-context.vercel.app](https://cleaning-context.vercel.app/) |
 
 ---
 
@@ -30,6 +31,21 @@
 - **도구**: 시간 조회, 계산, 웹 검색(DuckDuckGo), 메모 저장/조회
 
 → 자세한 설명: [day01-voice-assistant/README.md](day01-voice-assistant/README.md)
+
+---
+
+## 팀 프로젝트 — 생활 맥락 로봇청소기 시뮬레이터
+
+LG전자 가전 멘토링 트랙. 로봇청소기가 시간·날씨·이벤트 같은 상황을 종합해 어디를·언제·어떻게 청소할지 결정하고, 그 이유를 자연어로 설명하는 Physical AI Agent 시뮬레이터.
+
+🌐 **라이브**: https://cleaning-context.vercel.app/
+
+- **백엔드**: FastAPI + Pydantic v2 + scoring engine + LLM (Timely GPT bridge, gpt-4o-mini) + 디스크 캐시
+- **프론트**: Next.js 15 + Tailwind v4 + SVG 평면도 + 4 시나리오 + 직접 입력 모드
+- **배포**: Render (백) · Vercel (프)
+- **팀**: 럭키 금성 — 전유성(팀장)·김준성·박주상
+
+→ 자세한 설명: [team-project-lg/README.md](team-project-lg/README.md)
 
 ---
 
