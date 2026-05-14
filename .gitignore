@@ -27,3 +27,14 @@ CLAUDE.md
 CLAUDE.local.md
 ROADMAP.md
 archive/
+
+# team-project-lg backend의 시드 JSON·docs는 트래킹 (data/ 규칙의 예외)
+!team-project-lg/backend/app/data/
+!team-project-lg/backend/app/data/**
+
+# 프론트·백엔드 빌드/임시 산출물
+team-project-lg/frontend/.next/
+team-project-lg/frontend/node_modules/
+team-project-lg/backend/cache/
+.playwright-mcp/
+*.png
